@@ -581,10 +581,13 @@ func (v *Play) toCommandArguments(ansibleArgs LocalModeAnsibleArgs, ansibleSSHSe
 		args = fmt.Sprintf("%s --private-key='%s'", args, ansibleArgs.PemFile)
 	}
 
+
 	sshExtraAgrsOptions := make([]string, 0)
 	sshExtraAgrsOptions = append(sshExtraAgrsOptions, fmt.Sprintf("-p %d", ansibleArgs.Port))
 	sshExtraAgrsOptions = append(sshExtraAgrsOptions, fmt.Sprintf("-o ConnectTimeout=%d", ansibleSSHSettings.ConnectTimeoutSeconds()))
-	sshExtraAgrsOptions = append(sshExtraAgrsOptions, fmt.Sprintf("-o ConnectionAttempts=%d", ansibleSSHSettings.ConnectAttempts()))
+	if ansibleSSHSettings.ConnectAttempts() > 0 {
+		os.Setenv("ANSIBLE_SSH_RETRIES",fmt.Sprintf("%d", ansibleSSHSettings.ConnectAttempts()))
+	}
 
 	if ansibleSSHSettings.InsecureNoStrictHostKeyChecking() || v.InventoryFile() != "" {
 		sshExtraAgrsOptions = append(sshExtraAgrsOptions, "-o StrictHostKeyChecking=no")
